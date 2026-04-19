@@ -1,0 +1,48 @@
+name: VulnPulse Daily Scan
+
+on:
+  schedule:
+    # 每天 09:00 UTC+8 (凌晨01:00 UTC)
+    - cron: '0 1 * * *'
+  workflow_dispatch:  # 支持手动触发
+  repository_dispatch:
+    types: [scan]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run VulnPulse
+        env:
+          # 在 Settings > Secrets 配置这些
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          GITHUB_TOKEN_1: ${{ secrets.GH_TOKEN_1 }}
+          GITHUB_TOKEN_2: ${{ secrets.GH_TOKEN_2 }}
+        run: |
+          # 覆盖 config.json 中的值
+          python - << 'PYEOF'
+          import json, os
+
+          config = json.load(open("config_example.json"))
+          config["feishu_webhook"] = os.environ.get("FEISHU_WEBHOOK", config["feishu_webhook"])
+          if os.environ.get("GITHUB_TOKEN_1"):
+              config["github_tokens"] = [os.environ["GITHUB_TOKEN_1"]]
+              if os.environ.get("GITHUB_TOKEN_2"):
+                  config["github_tokens"].append(os.environ["GITHUB_TOKEN_2"])
+          json.dump(config, open("config.json", "w"), indent=2)
+          print("Config written")
+          PYEOF
+          python vulnpulse.py
