@@ -1,0 +1,11 @@
+{
+  "keywords": ["python", "javascript", "java", "node", "react", "vue", "django", "spring", "log4j", "fastapi"],
+  "min_severity": "MEDIUM",
+  "max_results_per_source": 20,
+  "feishu_webhook": "https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_WEBHOOK_ID",
+  "feishu_bot_name": "VulnPulse",
+  "github_tokens": [
+    "YOUR_GITHUB_TOKEN_1",
+    "YOUR_GITHUB_TOKEN_2"
+  ]
+}
